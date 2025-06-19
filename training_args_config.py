@@ -140,6 +140,33 @@ training_args_metadata = {
 # Default training arguments dictionary extracted from metadata
 training_args_defaults = {k: v["default"] for k, v in training_args_metadata.items()}
 
+# For ManualTraining class (non-HF Trainer)
+non_trainer_args_defaults = {
+    "output_dir": "./manual_output",
+    "num_train_epochs": 3,
+    "per_device_train_batch_size": 4,
+    "per_device_eval_batch_size": 4,
+    "learning_rate": 5e-5,
+    "weight_decay": 0.01,
+    "warmup_steps": 100,
+    "eval_steps": 200,
+    "save_steps": 200,
+    "logging_steps": 50
+}
+
+non_trainer_args_metadata = {
+    "output_dir": "Directory to save checkpoints and final model.",
+    "num_train_epochs": "Number of epochs for training.",
+    "per_device_train_batch_size": "Batch size per device for training.",
+    "per_device_eval_batch_size": "Batch size per device for evaluation.",
+    "learning_rate": "Learning rate for optimizer.",
+    "weight_decay": "Weight decay for optimizer.",
+    "warmup_steps": "Warmup steps for learning rate scheduler.",
+    "eval_steps": "Steps interval for evaluation.",
+    "save_steps": "Steps interval for checkpoint saving.",
+    "logging_steps": "Steps interval for logging training loss.",
+}
+
 
 def print_training_args_metadata():
     print("Training Arguments Metadata:\n")

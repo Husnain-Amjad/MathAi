@@ -4,6 +4,7 @@ import os
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import math
+from peft import PeftModel
 
 class TimingTracker:
     """Custom class to track training times (replaces TimingCallback)."""
@@ -167,12 +168,20 @@ class ManualTraining:
                 print(f"End of epoch {epoch + 1}: Eval Loss = {eval_loss:.4f}")
                 self.model.train()
         
-        # End training
-        timing_tracker.on_train_end()
-        
-        # Save final model
-        self._save_model(training_args.output_dir)
-        print(f"Training completed! Model saved to {training_args.output_dir}")
+            # End training
+            timing_tracker.on_train_end()
+
+            # Save final model
+            if isinstance(self.model, PeftModel):
+                print("LoRA detected. Merging and saving final model...")
+                self.model = self.model.merge_and_unload()  # merge LoRA weights into base model
+            else:
+                print("Saving standard model...")
+
+            self._save_model(training_args.output_dir)
+            print(f"Training completed! Model saved to {training_args.output_dir}")
+        # Return the final model and tokenizer
+        return self.model, self.tokenizer
     
     def _evaluate(self, eval_dataloader):
         """Evaluate the model on validation dataset."""
@@ -199,11 +208,17 @@ class ManualTraining:
         self.tokenizer.save_pretrained(checkpoint_dir)
         
         print(f"Checkpoint saved at step {step}")
-    
+
     def _save_model(self, output_dir):
         """Save the final trained model."""
         os.makedirs(output_dir, exist_ok=True)
-        self.model.save_pretrained(output_dir)
+        if isinstance(self.model, PeftModel):
+            print("Mering Weights of LoRa...")
+            merged_model = self.model.merge_and_unload()
+            print("Weights Merged")
+        else:
+            merged_model = self.model
+        merged_model.save_pretrained(output_dir)
         self.tokenizer.save_pretrained(output_dir)
 
 # Example usage:

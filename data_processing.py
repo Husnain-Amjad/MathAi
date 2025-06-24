@@ -74,7 +74,7 @@ class Preprocessing:
 
 
     @staticmethod
-    def refine_none(string: str):
+    def refine_box_extraction(string: str):
                 
             if string is None:
                 return None

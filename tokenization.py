@@ -34,13 +34,13 @@ from typing import List, Dict
 from torch.utils.data import Dataset
 
 class TokenizedDataset(Dataset):
-    def _init_(self, encodings):
+    def __init__(self, encodings):
         self.encodings = encodings
 
-    def _len_(self):
+    def __len__(self):
         return len(self.encodings["input_ids"])
 
-    def _getitem_(self, idx):
+    def __getitem__(self, idx):
         return {
             "input_ids": self.encodings["input_ids"][idx],
             "attention_mask": self.encodings["attention_mask"][idx],

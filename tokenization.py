@@ -122,9 +122,29 @@ class Tokenization:
             truncation=True,
             padding="max_length"
         )
+        new_labels = []
+        # eos_token_id = self.tokenizer.eos_token_id
 
-        # For causal LM, labels are same as input_ids
-        tokenized_inputs["labels"] = tokenized_inputs["input_ids"].copy()
+        for input_ids in tokenized_inputs["input_ids"]:
+            labels = input_ids.copy()
+
+            # Find all positions of eos tokens
+            eos_positions = [i for i, token in enumerate(input_ids) if token == self.eos]
+
+            if len(eos_positions) >= 2:
+                first_eos_index = eos_positions[0]
+                # Mask question tokens + first eos
+                for i in range(first_eos_index + 1):
+                    labels[i] = -100
+            else:
+                # If not found, mask everything as a precaution
+                labels[:] = [-100] * len(labels)
+
+            new_labels.append(labels)
+        # For causal LM, labels are same as input_ids but need to mask the question so that in training time loss compute only on solution of question
+        tokenized_inputs["labels"] = new_labels
+        
+
 
         return tokenized_inputs
     

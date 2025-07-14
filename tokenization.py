@@ -60,41 +60,7 @@ class Tokenization:
         self.max_length = max_length
         self.eos = self.tokenizer.eos_token if self.tokenizer.eos_token else ""
         print("\n EOS TOKEN", self.eos)
-    # def training_unified_tokenization(self, examples: Dict[str, List[str]]) -> Dict:
-    #     """
-    #     Tokenize examples for training.
-    #     Concatenates question and answer with EOS token and prepares labels.
 
-    #     Args:
-    #         examples (Dict): Dictionary with keys "question" and "answer", both lists of strings.
-
-    #     Returns:
-    #         Dict: Tokenized inputs with labels.
-    #     """
-    #     print("\n NEW EOS TOKEN", self.eos)
-    #     self.eos = self.tokenizer.eos_token if self.tokenizer.eos_token else ""
-    #     # inputs = [
-    #     #     q + self.eos + a + self.eos
-    #     #     for q, a in zip(examples["problem"], examples["solution"])
-    #     # ]
-    #     # for q, a in zip(examples["problem"], examples["solution"]):
-    #     #     inputs = []
-            
-    #     #     print(f"question: {q}\n", f"\nAnswer: {a}\n", f"\nUnified Answer: {(q + self.eos + a + self.eos)}")
-
-    #     #     inputs.append(q + self.eos + a + self.eos)
-
-    #     tokenized_inputs = self.tokenizer(
-    #         inputs,
-    #         max_length=self.max_length,
-    #         truncation=True,
-    #         padding="max_length"
-    #     )
-
-    #     # For causal LM, labels are same as input_ids
-    #     tokenized_inputs["labels"] = tokenized_inputs["input_ids"].copy()
-
-    #     return tokenized_inputs
     def training_unified_tokenization(self, examples: Dict[str, List[str]]) -> Dict:
         """
         Tokenize examples for training.
@@ -109,7 +75,6 @@ class Tokenization:
         print("\n NEW EOS TOKEN", self.eos)
         self.eos = self.tokenizer.eos_token if self.tokenizer.eos_token else ""
 
-        # Initialize inputs list BEFORE the loop
         inputs = []
         
         for q, a in zip(examples["problem"], examples["solution"]):
@@ -123,25 +88,23 @@ class Tokenization:
             padding="max_length"
         )
         new_labels = []
-        # eos_token_id = self.tokenizer.eos_token_id
 
         for input_ids in tokenized_inputs["input_ids"]:
             labels = input_ids.copy()
 
-            # Find all positions of eos tokens
             eos_positions = [i for i, token in enumerate(input_ids) if token == self.eos]
 
             if len(eos_positions) >= 2:
                 first_eos_index = eos_positions[0]
-                # Mask question tokens + first eos
+
                 for i in range(first_eos_index + 1):
                     labels[i] = -100
             else:
-                # If not found, mask everything as a precaution
+
                 labels[:] = [-100] * len(labels)
 
             new_labels.append(labels)
-        # For causal LM, labels are same as input_ids but need to mask the question so that in training time loss compute only on solution of question
+
         tokenized_inputs["labels"] = new_labels
         
 
@@ -172,7 +135,6 @@ class Tokenization:
             padding="max_length"
         )
 
-        # Tokenize labels using target tokenizer mode
         with self.tokenizer.as_target_tokenizer():
             labels = self.tokenizer(
                 targets,
@@ -184,7 +146,6 @@ class Tokenization:
         model_inputs["labels"] = labels["input_ids"]
 
         return model_inputs
-
 
 
     def inference_tokenization(self, examples: Dict[str, List[str]]) -> Dict:

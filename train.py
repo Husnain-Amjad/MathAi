@@ -67,7 +67,7 @@ def stratified_sample(df, sample_ratio, random_state=42):
     sampled_df, _ = train_test_split(
         df,
         train_size=sample_ratio,
-        stratify=df['type_level']
+        stratify=df['type_level'],
         random_state=random_state
     )
     sampled_df = sampled_df.drop(columns=['type_level'])

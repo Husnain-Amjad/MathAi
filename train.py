@@ -58,16 +58,19 @@ def parse_args():
                         help="Extract only boxed solutions instead of full solutions.")
     return parser.parse_args()
 
-def stratified_sample(df, sample_ratio, stratify_column, random_state=42):
-    if sample_ratio >= 1.0 or stratify_column is None:
+def stratified_sample(df, sample_ratio, random_state=42):
+    if sample_ratio >= 1.0:
         return df
+    df['type_level'] = df['type'] + '_' + df['level']
+
     # Use train_test_split to sample a fraction while stratifying
     sampled_df, _ = train_test_split(
         df,
         train_size=sample_ratio,
-        stratify=df[stratify_column] if stratify_column in df.columns else None,
+        stratify=df['type_level']
         random_state=random_state
     )
+    sampled_df = sampled_df.drop(columns=['type_level'])
     return sampled_df
 
 def main():
@@ -164,10 +167,10 @@ def main():
     )
 
     # Inference
-    inference_wrapper = InferenceModule(trained_model, model_tokenizer)
-    question = "What is 2+2"
-    generated_output = inference_wrapper.generator(question)
-    print(f"Inference result for '{question}': {generated_output}")
+    # inference_wrapper = InferenceModule(trained_model, model_tokenizer)
+    # question = "What is 2+2"
+    # generated_output = inference_wrapper.generator(question)
+    # print(f"Inference result for '{question}': {generated_output}")
 
 if __name__ == "__main__":
     main()

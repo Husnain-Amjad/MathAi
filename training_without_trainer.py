@@ -14,10 +14,12 @@ model_names = [
     "google/gemma-3-27b-it" #12
 ]
 
+import torch
+import pandas as pd
+import argparse
 from data_processing import Preprocessing
 from base_data_loader import BaseDataLoader
-import pandas as pd
-import torch
+from sklearn.model_selection import train_test_split
 from bnb_config import four_bit_args
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig, AutoTokenizer , DataCollatorForLanguageModeling
 from bnb_config import four_bit_args
@@ -28,6 +30,48 @@ from training_args_config import non_trainer_args_defaults
 from types import SimpleNamespace
 from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
 from inference import InferenceModule
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
+    parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
+                        choices=model_names, help="Model to use for training.")
+    parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
+    parser.add_argument("--sample_ratio", type=float, default=1.0, 
+                        help="Ratio of data to use (0.0 to 1.0).")
+    parser.add_argument("--stratify_column", type=str, default=None, 
+                        help="Column to use for stratified sampling (e.g., 'problem_type').")
+    parser.add_argument("--use_quantization", action="store_true", 
+                        help="Enable 4-bit quantization.")
+    parser.add_argument("--use_lora", action="store_true", 
+                        help="Enable LoRA fine-tuning.")
+    parser.add_argument("--lora_rank", type=int, default=16, 
+                        help="LoRA rank parameter.")
+    parser.add_argument("--lora_dropout", type=float, default=0.1, 
+                        help="LoRA dropout rate.")
+    parser.add_argument("--num_epochs", type=int, default=3, 
+                        help="Number of training epochs.")
+    parser.add_argument("--output_dir", type=str, default="./results", 
+                        help="Directory for saving model outputs.")
+    parser.add_argument("--boxed", action="store_true", 
+                        help="Extract only boxed solutions instead of full solutions.")
+    return parser.parse_args()
+
+def stratified_sample(df, sample_ratio, random_state=42):
+    if sample_ratio >= 1.0:
+        return df
+    df['type_level'] = df['type'] + '_' + df['level']
+
+    # Use train_test_split to sample a fraction while stratifying
+    sampled_df, _ = train_test_split(
+        df,
+        train_size=sample_ratio,
+        stratify=df['type_level']
+        random_state=random_state
+    )
+    sampled_df = sampled_df.drop(columns=['type_level'])
+    return sampled_df
+
 
 ########################################################################################################################
 ################################################# Data Loading #########################################################
@@ -44,7 +88,7 @@ val_loader = BaseDataLoader('AUG_MATH\\validation.csv')
 val_data = val_loader.load()
 # val_data = val_data.head(int(len(val_data)*0.1))
 print("val data len: ", val_data.shape[0])
-print("Train Data is Loaded: \n", val_data.head())
+print("Val Data is Loaded: \n", val_data.head())
 
 ########################################################################################################################
 ######################################## Extracting Problem-Solution(\boxed{}) #########################################

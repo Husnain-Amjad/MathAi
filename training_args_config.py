@@ -54,6 +54,22 @@ training_args_metadata = {
         "default": 0.0,
         "description": "Weight decay to apply (if any).",
     },
+    "gradient_accumulation_steps": {
+        "default": 1,
+        "description": "Number of updates steps to accumulate before performing a backward/update pass.",
+    },
+    "warmup_steps": {
+        "default": 0,
+        "description": "Number of steps for learning rate warmup.",
+    },
+    "warmup_ratio": {
+        "default": 0.0,
+        "description": "Ratio of total steps for LR warmup (overridden by warmup_steps if set).",
+    },
+    "report_to": {
+        "default": "tensorboard",
+        "description": "The list of integrations to report the results and logs to.",
+    },
     "adam_beta1": {
         "default": 0.9,
         "description": "Beta1 parameter for Adam optimizer.",
@@ -92,7 +108,7 @@ training_args_metadata = {
         "description": "Tensorboard log directory.",
     },
     "logging_steps": {
-        "default": 500,
+        "default": 50,
         "description": "Log every X update steps.",
     },
     "eval_strategy": {
@@ -112,7 +128,7 @@ training_args_metadata = {
         "description": "Save checkpoint every X steps if save_strategy is 'steps'.",
     },
     "save_total_limit": {
-        "default": 3,
+        "default": 2,
         "description": "Limit the total amount of checkpoints. Deletes the older checkpoints.",
     },
     "seed": {
@@ -120,11 +136,11 @@ training_args_metadata = {
         "description": "Random seed for reproducibility.",
     },
     "fp16": {
-        "default": False,
+        "default": True,
         "description": "Whether to use 16-bit (mixed) precision training.",
     },
     "load_best_model_at_end": {
-        "default": False,
+        "default": True,
         "description": "Whether to load the best model found during training at the end of training.",
     },
     "metric_for_best_model": {
@@ -143,28 +159,43 @@ training_args_defaults = {k: v["default"] for k, v in training_args_metadata.ite
 # For ManualTraining class (non-HF Trainer)
 non_trainer_args_defaults = {
     "output_dir": "./manual_output",
-    "num_train_epochs": 3,
+    "num_train_epochs": 10,
+    "per_device_eval_batch_size": 2,
+    "learning_rate": 2e-5,
+    "warmup_steps": 100,
+    "save_steps": 500,
+    "eval_strategy": "steps",
+    "eval_steps": 500,
+    "save_total_limit": 2,
+    "fp16": True,
+    "logging_strategy": "steps",
+    "log_level": "info",
+    "load_best_model_at_end": True,        
     "per_device_train_batch_size": 4,
     "per_device_eval_batch_size": 4,
     "learning_rate": 5e-5,
     "weight_decay": 0.01,
     "warmup_steps": 100,
-    "eval_steps": 200,
-    "save_steps": 200,
     "logging_steps": 50
 }
 
 non_trainer_args_metadata = {
-    "output_dir": "Directory to save checkpoints and final model.",
-    "num_train_epochs": "Number of epochs for training.",
-    "per_device_train_batch_size": "Batch size per device for training.",
-    "per_device_eval_batch_size": "Batch size per device for evaluation.",
-    "learning_rate": "Learning rate for optimizer.",
-    "weight_decay": "Weight decay for optimizer.",
-    "warmup_steps": "Warmup steps for learning rate scheduler.",
-    "eval_steps": "Steps interval for evaluation.",
-    "save_steps": "Steps interval for checkpoint saving.",
-    "logging_steps": "Steps interval for logging training loss.",
+    "output_dir": "Directory where checkpoints and the final model will be saved.",
+    "num_train_epochs": "Total number of training epochs.",
+    "per_device_train_batch_size": "Batch size allocated to each device during training.",
+    "per_device_eval_batch_size": "Batch size allocated to each device during evaluation.",
+    "learning_rate": "Initial learning rate for the optimizer.",
+    "weight_decay": "Weight decay to apply (L2 regularization).",
+    "warmup_steps": "Number of warmup steps for the learning rate scheduler.",
+    "save_steps": "Number of steps between model checkpoint saves.",
+    "eval_strategy": "Evaluation strategy (e.g., 'steps' or 'epoch').",
+    "eval_steps": "Number of steps between evaluation runs.",
+    "save_total_limit": "Maximum number of checkpoints to keep. Older ones will be deleted.",
+    "fp16": "Whether to use 16-bit (mixed) precision training (if supported by hardware).",
+    "logging_strategy": "Logging strategy to use (e.g., 'steps').",
+    "log_level": "Verbosity level of logging (e.g., 'info', 'debug').",
+    "load_best_model_at_end": "Whether to load the best model (based on evaluation metric) at the end of training.",
+    "logging_steps": "Number of steps between logging updates."
 }
 
 

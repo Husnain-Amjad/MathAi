@@ -145,7 +145,13 @@ def main():
         print("CUDA is NOT available.")
 
     # Model Setup
-    bnb_config = BitsAndBytesConfig(**args.bnb_config) if args.use_quantization else None
+    bnb_config = None
+    if args.use_quantization:
+        if args.bnb_config == "four_bit_args":
+            bnb_config = BitsAndBytesConfig(**four_bit_args)
+        elif args.bnb_config == "eight_bit_args":
+            bnb_config = BitsAndBytesConfig(**eight_bit_args)
+
     
     def is_lora_checkpoint(path):
         return os.path.exists(os.path.join(path, "adapter_config.json"))

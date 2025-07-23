@@ -60,6 +60,14 @@ def parse_args():
                         help="Directory for saving model outputs.")
     parser.add_argument("--boxed", action="store_true", 
                         help="Extract only boxed solutions instead of full solutions.")
+    parser.add_argument("--logging_steps", type=int, default= args.save_steps, 
+                        help="Logging after steps.")
+    parser.add_argument("--logging_strategy", type=str, default= "steps", 
+                            help="Logging Strategy (steps/epoch)")
+    parser.add_argument("--learning_rate", type=float, default= 2e-5, 
+                            help="Learning Rate")
+    parser.add_argument("--fp16", type=bool, default= True, 
+                            help="fp16")
     return parser.parse_args()
 
 def stratified_sample(df, sample_ratio, random_state=42):
@@ -174,15 +182,15 @@ def main():
         "output_dir": args.output_dir,
         "num_train_epochs": args.epochs,
         "per_device_eval_batch_size": 2,
-        "learning_rate": 2e-5,
+        "learning_rate": args.learning_rate,
         "warmup_steps": 100,
-        "logging_steps": 10,
+        "logging_steps": args.logging_steps,
         "save_steps": args.save_steps,
         "eval_strategy": "steps",
         "eval_steps": args.save_steps,
         "save_total_limit": 2,
-        "fp16": True,
-        "logging_strategy": "steps",
+        "fp16": args.fp16,
+        "logging_strategy": args.logging_strategy,
         "log_level": "info",
         "load_best_model_at_end": True
     }

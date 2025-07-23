@@ -37,7 +37,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
                         choices=MODEL_NAMES, help="Model to use for training.")
-    parser.add_argument("--load_checkpoint", type=str, default = None,
+    parser.add_argument("--load_checkpoints", type=str, default = None,
                         help="Path to checkpoint location.")
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
@@ -160,12 +160,8 @@ def main():
     # Data Collator
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
-    ##########
 
 
-
-
-    ##########
     per_device_train_batch_size = 4
     gradient_accumulation_steps = 4
     world_size = torch.cuda.device_count()

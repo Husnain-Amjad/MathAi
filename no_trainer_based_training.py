@@ -90,8 +90,6 @@ class ManualTraining:
             )
 
         
-
-
         eval_steps = getattr(training_args, 'eval_steps', training_args.eval_steps)
         save_steps = getattr(training_args, 'save_steps', training_args.save_steps)
         logging_steps = getattr(training_args, 'logging_steps', training_args.logging_steps)
@@ -106,7 +104,7 @@ class ManualTraining:
             eval_dataloader = self.accelerator.prepare(eval_dataloader)
 
         if getattr(training_args, "load_checkpoint", None):
-            ckpt_path = training_args.load_checkpoints
+            ckpt_path = training_args.load_checkpoint
             print(f"⏳ Resuming training from checkpoint: {ckpt_path}")
 
             # Load optimizer/scheduler + training state
@@ -161,16 +159,23 @@ class ManualTraining:
                         best_eval_loss = eval_loss
                         best_model_state = self.model.state_dict()
 
-                if global_step % save_steps == 0:
-                    ckpt_path = self._save_checkpoint(training_args.output_dir, global_step)
-                    torch.save({
-                        "optimizer": optimizer.state_dict(),
-                        "scheduler": scheduler.state_dict(),
-                        "epoch": epoch,
-                        "global_step": global_step,
-                        "best_eval_loss": best_eval_loss,
-                    }, os.path.join(ckpt_path, "training_state.pt"))
-                    saved_checkpoints.append(ckpt_path)
+                    if global_step % save_steps == 0:
+                        # Define path for the full checkpoint directory
+                        ckpt_path = os.path.join(training_args.output_dir, f"checkpoint-{global_step}")
+                        os.makedirs(ckpt_path, exist_ok=True)
+                        
+                        # Accelerator handles saving the model, optimizer, and scheduler states
+                        self.accelerator.save_state(ckpt_path)
+                        
+                        # Save your custom Python state variables
+                        torch.save({
+                            "epoch": epoch,
+                            "global_step": global_step,
+                            "best_eval_loss": best_eval_loss,
+                        }, os.path.join(ckpt_path, "training_state.pt"))
+                        
+                        print(f"Checkpoint saved to {ckpt_path}")
+
                     if save_total_limit and len(saved_checkpoints) > save_total_limit:
                         to_remove = saved_checkpoints.pop(0)
                         shutil.rmtree(to_remove, ignore_errors=True)

@@ -174,7 +174,6 @@ def main():
         "output_dir": args.output_dir,
         "num_train_epochs": args.epochs,
         "per_device_eval_batch_size": 2,
-        "num_train_epochs": args.epochs,
         "learning_rate": 2e-5,
         "warmup_steps": 100,
         "logging_steps": 10,

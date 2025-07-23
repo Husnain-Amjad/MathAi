@@ -70,24 +70,24 @@ class ManualTraining:
         optimizer = torch.optim.AdamW(
             self.model.parameters(),
             lr=training_args.learning_rate,
-            weight_decay=getattr(training_args, 'weight_decay', 0.01)
+            weight_decay=getattr(training_args, 'weight_decay', training_args.weight_decay)
         )
 
         # Scheduler
         num_epochs = training_args.num_train_epochs
         total_steps = len(train_dataloader) * num_epochs
-        warmup_steps = getattr(training_args, 'warmup_steps', 0)
+        warmup_steps = getattr(training_args, 'warmup_steps', training_args.warmup_steps)
         scheduler = torch.optim.lr_scheduler.LinearLR(
             optimizer,
             start_factor=0.1 if warmup_steps > 0 else 1.0,
             total_iters=warmup_steps if warmup_steps > 0 else 1
         )
 
-        eval_steps = getattr(training_args, 'eval_steps', len(train_dataloader))
-        save_steps = getattr(training_args, 'save_steps', len(train_dataloader))
-        logging_steps = getattr(training_args, 'logging_steps', 50)
-        save_total_limit = getattr(training_args, 'save_total_limit', None)
-        load_best_model_at_end = getattr(training_args, 'load_best_model_at_end', False)
+        eval_steps = getattr(training_args, 'eval_steps', training_args.eval_steps)
+        save_steps = getattr(training_args, 'save_steps', training_args.save_steps)
+        logging_steps = getattr(training_args, 'logging_steps', training_args.logging_steps)
+        save_total_limit = getattr(training_args, 'save_total_limit', training_args.save_total_limit)
+        load_best_model_at_end = getattr(training_args, 'load_best_model_at_end', training_args.load_best_model_at_end)
         eval_strategy = getattr(training_args, 'eval_strategy', 'steps')
 
         self.model, optimizer, train_dataloader = self.accelerator.prepare(

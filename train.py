@@ -37,6 +37,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
                         choices=MODEL_NAMES, help="Model to use for training.")
+    parser.add_argument("--load_checkpoint", type=str, default = None,
+                        help="Path to checkpoint location.")
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
                         help="Ratio of data to use (0.0 to 1.0).")
@@ -50,8 +52,10 @@ def parse_args():
                         help="LoRA rank parameter.")
     parser.add_argument("--lora_dropout", type=float, default=0.1, 
                         help="LoRA dropout rate.")
-    parser.add_argument("--num_epochs", type=int, default=3, 
+    parser.add_argument("--epochs", type=int, default=10, 
                         help="Number of training epochs.")
+    parser.add_argument("--save_steps", type=int, default=500, 
+                        help="Save model after steps.")
     parser.add_argument("--output_dir", type=str, default="./results", 
                         help="Directory for saving model outputs.")
     parser.add_argument("--boxed", action="store_true", 
@@ -128,11 +132,18 @@ def main():
 
     # Model Setup
     bnb_config = BitsAndBytesConfig(**four_bit_args) if args.use_quantization else None
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_name,
+    
+    if args.load_checkpoints:
+        model = AutoModelForCausalLM.from_pretrained(
+        args.load_checkpoints,
         quantization_config=bnb_config,
-        device_map="auto"
-    )
+        device_map="auto")
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            args.model_name,
+            quantization_config=bnb_config,
+            device_map="auto"
+        )
 
     if args.use_lora:
         lora_config = lora_default_args.copy()
@@ -149,10 +160,37 @@ def main():
     # Data Collator
     data_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm=False)
 
+    ##########
+
+
+
+
+    ##########
+    per_device_train_batch_size = 4
+    gradient_accumulation_steps = 4
+    world_size = torch.cuda.device_count()
+    train_batch_size = per_device_train_batch_size * gradient_accumulation_steps * world_size
+    per_device_train_batch_size=per_device_train_batch_size,
+    gradient_accumulation_steps=gradient_accumulation_steps,
+
     # Training Setup
     training_args_dict = {
         "output_dir": args.output_dir,
         "num_train_epochs": args.num_epochs,
+        "per_device_eval_batch_size": 2,
+        "num_train_epochs": args.epochs,
+        "learning_rate": 2e-5,
+        "warmup_steps": 100,
+        "logging_steps": 10,
+        "save_steps": args.save_steps,
+        "eval_strategy": "steps",
+        "eval_steps": args.save_steps,
+        "save_total_limit": 2,
+        "optim": "adamw_8bit",
+        "fp16": True,
+        "logging_strategy": "steps",
+        "log_level": "info",
+        "load_best_model_at_end": True
         **non_trainer_args_defaults
     }
     training_args = SimpleNamespace(**training_args_dict)

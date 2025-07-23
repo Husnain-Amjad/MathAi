@@ -60,7 +60,7 @@ def parse_args():
                         help="Directory for saving model outputs.")
     parser.add_argument("--boxed", action="store_true", 
                         help="Extract only boxed solutions instead of full solutions.")
-    parser.add_argument("--logging_steps", type=int, default= args.save_steps, 
+    parser.add_argument("--logging_steps", type=int, default= None, 
                         help="Logging after steps.")
     parser.add_argument("--logging_strategy", type=str, default= "steps", 
                             help="Logging Strategy (steps/epoch)")
@@ -117,8 +117,12 @@ def main():
     print("Rows with missing solutions:\n", val_cleaned[val_cleaned["solution"].isna()])
 
     # Tokenizer Setup
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-    tokenizer_obj = Tokenization(tokenizer, max_length=1024)
+    if args.load_checkpoints:
+        tokenizer = AutoTokenizer.from_pretrained(args.load_checkpoints)
+        tokenizer_obj = Tokenization(tokenizer, max_length=1024)
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+        tokenizer_obj = Tokenization(tokenizer, max_length=1024)
 
     # Tokenize Data
     train_tokens = tokenizer_obj.training_unified_tokenization(train_cleaned)
@@ -177,6 +181,11 @@ def main():
     per_device_train_batch_size=per_device_train_batch_size,
     gradient_accumulation_steps=gradient_accumulation_steps,
 
+    if args.logging_steps:
+        logging_steps =  args.logging_steps
+    else:
+        logging_steps =  args.save_steps   
+
     # Training Setup
     training_args_dict = {
         "output_dir": args.output_dir,
@@ -184,7 +193,7 @@ def main():
         "per_device_eval_batch_size": 2,
         "learning_rate": args.learning_rate,
         "warmup_steps": 100,
-        "logging_steps": args.logging_steps,
+        "logging_steps": logging_steps,
         "save_steps": args.save_steps,
         "eval_strategy": "steps",
         "eval_steps": args.save_steps,

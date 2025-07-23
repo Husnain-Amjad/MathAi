@@ -147,8 +147,7 @@ def main():
     
     if args.load_checkpoints:
         model = AutoModelForCausalLM.from_pretrained(
-        args.load_checkpoints,
-        quantization_config=bnb_config,
+        args.model_name, args.load_checkpoints,
         device_map="auto")
     else:
         model = AutoModelForCausalLM.from_pretrained(
@@ -157,13 +156,13 @@ def main():
             device_map="auto"
         )
 
-    if args.use_lora:
-        lora_config = lora_default_args.copy()
-        lora_config["r"] = args.lora_rank
-        lora_config["lora_dropout"] = args.lora_dropout
-        peft_config = LoraConfig(**lora_config)
-        model = prepare_model_for_kbit_training(model)
-        model = get_peft_model(model, peft_config)
+        if args.use_lora:
+            lora_config = lora_default_args.copy()
+            lora_config["r"] = args.lora_rank
+            lora_config["lora_dropout"] = args.lora_dropout
+            peft_config = LoraConfig(**lora_config)
+            model = prepare_model_for_kbit_training(model)
+            model = get_peft_model(model, peft_config)
     
     model = model.to(device)
     if args.use_lora:

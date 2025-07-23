@@ -172,7 +172,7 @@ def main():
     # Training Setup
     training_args_dict = {
         "output_dir": args.output_dir,
-        "num_train_epochs": args.num_epochs,
+        "num_train_epochs": args.epochs,
         "per_device_eval_batch_size": 2,
         "num_train_epochs": args.epochs,
         "learning_rate": 2e-5,

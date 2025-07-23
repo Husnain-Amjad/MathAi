@@ -4,14 +4,14 @@ import os
 import pandas as pd
 import torch
 from transformers import AutoModelForCausalLM, BitsAndBytesConfig, AutoTokenizer, DataCollatorForLanguageModeling
-from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training, PeftModel
 from sklearn.model_selection import train_test_split
 from data_processing import Preprocessing
 from base_data_loader import BaseDataLoader
 from tokenization import Tokenization, TokenizedDataset
 from no_trainer_based_training import ManualTraining
 from lora_config import lora_default_args
-from bnb_config import four_bit_args
+from bnb_config import four_bit_args, eight_bit_args
 from training_args_config import non_trainer_args_defaults
 from types import SimpleNamespace
 from inference import InferenceModule
@@ -46,6 +46,8 @@ def parse_args():
                         help="Column to use for stratified sampling (e.g., 'problem_type').")
     parser.add_argument("--use_quantization", action="store_true", 
                         help="Enable 4-bit quantization.")
+    parser.add_argument("--bnb_config", type=str, default= "four_bit_args", 
+                            help="When use_quantization then BitsAndBytesConfig (four_bit_args/eight_bit_args)")
     parser.add_argument("--use_lora", action="store_true", 
                         help="Enable LoRA fine-tuning.")
     parser.add_argument("--lora_rank", type=int, default=16, 
@@ -143,12 +145,21 @@ def main():
         print("CUDA is NOT available.")
 
     # Model Setup
-    bnb_config = BitsAndBytesConfig(**four_bit_args) if args.use_quantization else None
+    bnb_config = BitsAndBytesConfig(**args.bnb_config) if args.use_quantization else None
+    
+    def is_lora_checkpoint(path):
+        return os.path.exists(os.path.join(path, "adapter_config.json"))
     
     if args.load_checkpoints:
-        model = AutoModelForCausalLM.from_pretrained(
-        args.model_name, args.load_checkpoints,
-        device_map="auto")
+        if is_lora_checkpoint(args.load_checkpoints):
+            print("LoRA adapter detected. Loading with PeftModel...")
+            model = AutoModelForCausalLM.from_pretrained(args.model_name,
+            quantization_config=bnb_config,
+            device_map="auto")
+            model = PeftModel.from_pretrained(model, args.load_checkpoints)
+        else:
+            print("Standard model checkpoint. Loading with AutoModelForCausalLM...")
+            model = AutoModelForCausalLM.from_pretrained(args.load_checkpoints)
     else:
         model = AutoModelForCausalLM.from_pretrained(
             args.model_name,

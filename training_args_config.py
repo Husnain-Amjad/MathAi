@@ -151,6 +151,10 @@ training_args_metadata = {
         "default": None,
         "description": "Whether the metric for the best model should be maximized or minimized.",
     },
+    "load_checkpoint": {
+        "default": False,
+        "description": "Whether to load checkpoint or not"
+    }
 }
 
 # Default training arguments dictionary extracted from metadata
@@ -176,8 +180,10 @@ non_trainer_args_defaults = {
     "learning_rate": 5e-5,
     "weight_decay": 0.01,
     "warmup_steps": 100,
-    "logging_steps": 50
+    "logging_steps": 50,
+    "load_checkpoint": False
 }
+
 
 non_trainer_args_metadata = {
     "output_dir": "Directory where checkpoints and the final model will be saved.",
@@ -195,7 +201,8 @@ non_trainer_args_metadata = {
     "logging_strategy": "Logging strategy to use (e.g., 'steps').",
     "log_level": "Verbosity level of logging (e.g., 'info', 'debug').",
     "load_best_model_at_end": "Whether to load the best model (based on evaluation metric) at the end of training.",
-    "logging_steps": "Number of steps between logging updates."
+    "logging_steps": "Number of steps between logging updates.",
+    "load_checkpoint": "Whether to load checkpoint or not"
 }
 
 

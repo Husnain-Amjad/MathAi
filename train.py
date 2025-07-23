@@ -42,8 +42,8 @@ def parse_args():
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
                         help="Ratio of data to use (0.0 to 1.0).")
-    parser.add_argument("--stratify_column", type=str, default=None, 
-                        help="Column to use for stratified sampling (e.g., 'problem_type').")
+    # parser.add_argument("--stratify_column", type=str, default=None, 
+    #                     help="Column to use for stratified sampling (e.g., 'problem_type').")
     parser.add_argument("--use_quantization", action="store_true", 
                         help="Enable 4-bit quantization.")
     parser.add_argument("--bnb_config", type=str, default= "four_bit_args", 
@@ -202,6 +202,10 @@ def main():
     else:
         logging_steps =  args.save_steps   
 
+
+    if args.load_checkpoints:
+        load_checkpoint = True
+        
     # Training Setup
     training_args_dict = {
         "output_dir": args.output_dir,
@@ -217,7 +221,8 @@ def main():
         "fp16": args.fp16,
         "logging_strategy": args.logging_strategy,
         "log_level": "info",
-        "load_best_model_at_end": True
+        "load_best_model_at_end": True,
+        "load_checkpoint": load_checkpoint
     }
 
 

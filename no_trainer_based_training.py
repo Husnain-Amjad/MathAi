@@ -72,42 +72,25 @@ class ManualTraining:
         start_epoch = 0
         total_loss = 0.0
         saved_checkpoints = []
-
-        if getattr(training_args, "load_checkpoint", None):
-            ckpt_path = training_args.load_checkpoint
-            print(f"⏳ Resuming training from checkpoint: {ckpt_path}")
-
-            # Load optimizer/scheduler + training state
-            train_state_path = os.path.join(ckpt_path, "training_state.pt")
-            if os.path.exists(train_state_path):
-                state = torch.load(train_state_path, map_location="cpu")
-                optimizer.load_state_dict(state["optimizer"])
-                scheduler.load_state_dict(state["scheduler"])
-                global_step = state.get("global_step", 0)
-                start_epoch = state.get("epoch", 0)
-                best_eval_loss = state.get("best_eval_loss", float("inf"))
-                print(f"✅ Training state restored: step {global_step}, epoch {start_epoch}")
-            else:
-                print("⚠️ No training_state.pt found. Starting from scratch.")
-
-        else: 
-
-            # Optimizer
-            optimizer = torch.optim.AdamW(
+        
+        optimizer = torch.optim.AdamW(
                 self.model.parameters(),
                 lr=training_args.learning_rate,
                 weight_decay=getattr(training_args, 'weight_decay', training_args.weight_decay)
             )
 
             # Scheduler
-            num_epochs = training_args.num_train_epochs
-            total_steps = len(train_dataloader) * num_epochs
-            warmup_steps = getattr(training_args, 'warmup_steps', training_args.warmup_steps)
-            scheduler = torch.optim.lr_scheduler.LinearLR(
+        num_epochs = training_args.num_train_epochs
+        total_steps = len(train_dataloader) * num_epochs
+        warmup_steps = getattr(training_args, 'warmup_steps', training_args.warmup_steps)
+        scheduler = torch.optim.lr_scheduler.LinearLR(
                 optimizer,
                 start_factor=0.1 if warmup_steps > 0 else 1.0,
                 total_iters=warmup_steps if warmup_steps > 0 else 1
             )
+
+        
+
 
         eval_steps = getattr(training_args, 'eval_steps', training_args.eval_steps)
         save_steps = getattr(training_args, 'save_steps', training_args.save_steps)
@@ -122,7 +105,22 @@ class ManualTraining:
         if eval_dataloader:
             eval_dataloader = self.accelerator.prepare(eval_dataloader)
 
+        if getattr(training_args, "load_checkpoint", None):
+            ckpt_path = training_args.load_checkpoints
+            print(f"⏳ Resuming training from checkpoint: {ckpt_path}")
 
+            # Load optimizer/scheduler + training state
+            train_state_path = os.path.join(ckpt_path, "training_state.pt")
+            if os.path.exists(train_state_path):
+                state = torch.load(train_state_path, map_location="cpu")
+                optimizer.load_state_dict(state["optimizer"])
+                scheduler.load_state_dict(state["scheduler"])
+                global_step = state.get("global_step", 0)
+                start_epoch = state.get("epoch", 0)
+                best_eval_loss = state.get("best_eval_loss", float("inf"))
+                print(f"✅ Training state restored: step {global_step}, epoch {start_epoch}")
+            else:
+                print("⚠️ No training_state.pt found. Starting from scratch.")
 
         timing_tracker.on_train_begin(num_epochs)
         self.model.train()

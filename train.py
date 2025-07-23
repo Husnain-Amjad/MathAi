@@ -186,7 +186,7 @@ def main():
         "fp16": True,
         "logging_strategy": "steps",
         "log_level": "info",
-        "load_best_model_at_end": True
+        "load_best_model_at_end": True,
         **non_trainer_args_defaults
     }
     training_args = SimpleNamespace(**training_args_dict)

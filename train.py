@@ -181,14 +181,15 @@ def main():
         "eval_strategy": "steps",
         "eval_steps": args.save_steps,
         "save_total_limit": 2,
-        "optim": "adamw_8bit",
         "fp16": True,
         "logging_strategy": "steps",
         "log_level": "info",
-        "load_best_model_at_end": True,
-        **non_trainer_args_defaults
+        "load_best_model_at_end": True
     }
-    training_args = SimpleNamespace(**training_args_dict)
+
+
+    args_dict = {**non_trainer_args_defaults, **training_args_dict}
+    training_args = SimpleNamespace(**args_dict)
 
     # Training
     trainer_wrapper = ManualTraining(model=model, tokenizer=tokenizer)

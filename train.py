@@ -37,8 +37,8 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
                         choices=MODEL_NAMES, help="Model to use for training.")
-    # parser.add_argument("--load_checkpoints", type=str, default = None,
-    #                     help="Path to checkpoint location.")
+    parser.add_argument("--load_checkpoints", type=str, default = None,
+                        help="Path to checkpoint location.")
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
                         help="Ratio of data to use (0.0 to 1.0).")
@@ -194,10 +194,10 @@ def main():
     per_device_train_batch_size=per_device_train_batch_size,
     gradient_accumulation_steps=gradient_accumulation_steps,
 
-    # if args.logging_steps:
-    #     logging_steps =  args.logging_steps
-    # else:
-    #     logging_steps =  args.save_steps   
+    if args.logging_steps:
+        logging_steps =  args.logging_steps
+    else:
+        logging_steps =  args.save_steps   
 
 
     # if args.load_checkpoints:
@@ -219,9 +219,9 @@ def main():
         "logging_strategy": args.logging_strategy,
         "log_level": "info",
         "load_best_model_at_end": True,
-        # "load_checkpoint": load_checkpoint
-    }
 
+    }
+        # "load_checkpoint": load_checkpoint
 
     args_dict = {**non_trainer_args_defaults, **training_args_dict}
     training_args = SimpleNamespace(**args_dict)

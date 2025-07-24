@@ -181,9 +181,9 @@ non_trainer_args_defaults = {
     "weight_decay": 0.01,
     "warmup_steps": 100,
     "logging_steps": 50,
-    # "load_checkpoint": False
-}
 
+}
+    # "load_checkpoint": False
 
 non_trainer_args_metadata = {
     "output_dir": "Directory where checkpoints and the final model will be saved.",

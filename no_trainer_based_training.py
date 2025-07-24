@@ -1,6 +1,7 @@
 import torch
 import time
 import os
+# import json
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 import shutil
@@ -108,7 +109,22 @@ class ManualTraining:
             print(f"⏳ Resuming training from checkpoint: {ckpt_path}")
 
             # Load optimizer/scheduler + training state
-            train_state_path = os.path.join(ckpt_path, "training_state.pt")
+            train_state_path = os.path.join(ckpt_path, "trainer_state.pt")
+            # if os.path.exists(train_state_path):
+
+            #     with open(train_state_path, 'r') as f:
+            #         state = json.load(f)
+
+            #     # Note: Keys in trainer_state.json might be different.
+            #     # Check the file to confirm the keys are 'global_step', 'epoch', etc.
+            #     global_step = state.get("global_step", 0)
+            #     # The epoch saved is the one that completed, so we start from the next one.
+            #     start_epoch = state.get("epoch", 0) + 1 
+            #     best_eval_loss = state.get("best_metric", float("inf")) # Trainer often saves it as 'best_metric'
+                
+            #     print(f"✅ Training state restored: resuming from step {global_step} and epoch {start_epoch}")
+            # else:
+            #     print(f"⚠️ Could not find {train_state_path}. Resuming optimizer/model state only.")
             if os.path.exists(train_state_path):
                 state = torch.load(train_state_path, map_location="cpu")
                 optimizer.load_state_dict(state["optimizer"])

@@ -119,12 +119,9 @@ def main():
     print("Rows with missing solutions:\n", val_cleaned[val_cleaned["solution"].isna()])
 
     # Tokenizer Setup
-    if args.load_checkpoints:
-        tokenizer = AutoTokenizer.from_pretrained(args.load_checkpoints)
-        tokenizer_obj = Tokenization(tokenizer, max_length=1024)
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(args.model_name)
-        tokenizer_obj = Tokenization(tokenizer, max_length=1024)
+
+    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer_obj = Tokenization(tokenizer, max_length=1024)
 
     # Tokenize Data
     train_tokens = tokenizer_obj.training_unified_tokenization(train_cleaned)

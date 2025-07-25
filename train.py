@@ -32,13 +32,12 @@ MODEL_NAMES = [
     "EleutherAI/gpt-neo-2.7B",
     "google/gemma-3-27b-it"
 ]
-
+    # parser.add_argument("--load_checkpoints", type=str, default = None,
+    #                     help="Path to checkpoint location.")
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
                         choices=MODEL_NAMES, help="Model to use for training.")
-    parser.add_argument("--load_checkpoints", type=str, default = None,
-                        help="Path to checkpoint location.")
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
                         help="Ratio of data to use (0.0 to 1.0).")
@@ -150,27 +149,27 @@ def main():
             bnb_config = BitsAndBytesConfig(**eight_bit_args)
 
     
-    def is_lora_checkpoint(path):
-        return os.path.exists(os.path.join(path, "adapter_config.json"))
+    # def is_lora_checkpoint(path):
+    #     return os.path.exists(os.path.join(path, "adapter_config.json"))
     
-    if args.load_checkpoints:
-        if is_lora_checkpoint(args.load_checkpoints):
-            print("LoRA adapter detected. Loading with PeftModel...")
-            model = AutoModelForCausalLM.from_pretrained(args.model_name,
-            quantization_config=bnb_config,
-            device_map="auto")
-            model = PeftModel.from_pretrained(model, args.load_checkpoints)
-        else:
-            print("Standard model checkpoint. Loading with AutoModelForCausalLM...")
-            model = AutoModelForCausalLM.from_pretrained(args.load_checkpoints)
-    else:
-        model = AutoModelForCausalLM.from_pretrained(
+    # if args.load_checkpoints:
+    #     if is_lora_checkpoint(args.load_checkpoints):
+    #         print("LoRA adapter detected. Loading with PeftModel...")
+    #         model = AutoModelForCausalLM.from_pretrained(args.model_name,
+    #         quantization_config=bnb_config,
+    #         device_map="auto")
+    #         model = PeftModel.from_pretrained(model, args.load_checkpoints)
+    #     else:
+    #         print("Standard model checkpoint. Loading with AutoModelForCausalLM...")
+    #         model = AutoModelForCausalLM.from_pretrained(args.load_checkpoints)
+    # else:
+    model = AutoModelForCausalLM.from_pretrained(
             args.model_name,
             quantization_config=bnb_config,
             device_map="auto"
         )
 
-        if args.use_lora:
+    if args.use_lora:
             lora_config = lora_default_args.copy()
             lora_config["r"] = args.lora_rank
             lora_config["lora_dropout"] = args.lora_dropout

@@ -199,7 +199,7 @@ class ManualTraining:
         # Dataloaders
         train_dataloader = DataLoader(
             combined_dataset,
-            batch_size=getattr(training_args, 'per_device_train_batch_size', 4),
+            batch_size=getattr(training_args.per_device_train_batch_size),
             shuffle=True,
             collate_fn=data_collator
         )
@@ -209,7 +209,7 @@ class ManualTraining:
         if tokenized_validation_dataset is not None:
             eval_dataloader = DataLoader(
                 tokenized_validation_dataset,
-                batch_size=getattr(training_args, 'per_device_eval_batch_size', 2),
+                batch_size=getattr(training_args.per_device_eval_batch_size),
                 shuffle=False,
                 collate_fn=data_collator
             )
@@ -226,14 +226,14 @@ class ManualTraining:
         # Optimizer
         optimizer = torch.optim.AdamW(
             self.model.parameters(),
-            lr=getattr(training_args, 'learning_rate', 2e-5),
-            weight_decay=getattr(training_args, 'weight_decay', 0.01)
+            lr=getattr(training_args.learning_rate),
+            weight_decay=getattr(training_args.weight_decay)
         )
 
         # Scheduler
-        num_epochs = getattr(training_args, 'num_train_epochs', 3)
+        num_epochs = getattr(training_args.num_train_epochs)
         total_steps = len(train_dataloader) * num_epochs
-        warmup_steps = getattr(training_args, 'warmup_steps', 100)
+        warmup_steps = getattr(training_args.warmup_steps)
         
         if warmup_steps > 0:
             scheduler = torch.optim.lr_scheduler.LinearLR(
@@ -245,12 +245,12 @@ class ManualTraining:
             scheduler = torch.optim.lr_scheduler.ConstantLR(optimizer, factor=1.0, total_iters=1)
 
         # Training arguments
-        eval_steps = getattr(training_args, 'eval_steps', 500)
-        save_steps = getattr(training_args, 'save_steps', 500)
-        logging_steps = getattr(training_args, 'logging_steps', 10)
-        save_total_limit = getattr(training_args, 'save_total_limit', 3)
-        load_best_model_at_end = getattr(training_args, 'load_best_model_at_end', False)
-        eval_strategy = getattr(training_args, 'eval_strategy', 'steps')
+        eval_steps = getattr(training_args.eval_steps)
+        save_steps = getattr(training_args.save_steps)
+        logging_steps = getattr(training_args.logging_steps)
+        save_total_limit = getattr(training_args.save_total_limit)
+        load_best_model_at_end = getattr(training_args.load_best_model_at_end)
+        eval_strategy = getattr(training_args.eval_strategy)
 
         # Prepare with accelerator
         self.model, optimizer, train_dataloader = self.accelerator.prepare(

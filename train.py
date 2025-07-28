@@ -193,10 +193,10 @@ def main():
     per_device_train_batch_size=per_device_train_batch_size,
     gradient_accumulation_steps=gradient_accumulation_steps,
 
-    if args.logging_steps:
-        logging_steps =  args.logging_steps
+    if args.logging_steps is None:
+        logging_steps =  args.save_steps
     else:
-        logging_steps =  args.save_steps   
+        logging_steps = args.logging_steps
 
 
     # if args.load_checkpoints:

@@ -180,7 +180,7 @@ non_trainer_args_defaults = {
     "learning_rate": 5e-5,
     "weight_decay": 0.01,
     "warmup_steps": 100,
-    "logging_steps": 50,
+    "logging_steps": 100,
 
 }
     # "load_checkpoint": False

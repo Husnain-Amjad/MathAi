@@ -426,48 +426,57 @@ class ManualTraining:
         return total_eval_loss / max(steps, 1)
 
     def _save_checkpoint(self, output_dir, step_or_epoch, epoch, best_eval_loss, saved_checkpoints, save_total_limit):
-        """Save checkpoint and manage checkpoint limits."""
+        """
+        Save training checkpoint:
+        - Supports LoRA and standard models
+        - Saves optimizer, scheduler, and training state
+        - Manages checkpoint rotation using save_total_limit
+        """
+
         ckpt_dir = os.path.join(output_dir, f"checkpoint-{step_or_epoch}")
         os.makedirs(ckpt_dir, exist_ok=True)
-        
+
         try:
-            # For quantized LoRA models, save components separately
-            if hasattr(self.model, 'peft_config'):
-                # Save LoRA adapter
+            # 1. Save model (LoRA or standard)
+            if hasattr(self.model, "peft_config"):  # LoRA adapter model
                 self.model.save_pretrained(ckpt_dir)
                 self.tokenizer.save_pretrained(ckpt_dir)
-                
-                # Save optimizer and scheduler manually
-                torch.save(self.accelerator.optimizer.state_dict(), os.path.join(ckpt_dir, "optimizer.bin"))
-                torch.save(self.accelerator.lr_scheduler.state_dict(), os.path.join(ckpt_dir, "scheduler.bin"))
-                
-                print(f"✅ LoRA checkpoint saved to {ckpt_dir}")
-            else:
-                # For non-LoRA models, use accelerator
+            else:  # Full model
                 self.accelerator.save_state(ckpt_dir)
-                print(f"✅ Standard checkpoint saved to {ckpt_dir}")
-            
-            # Save custom training state
+
+            # 2. Save optimizer and scheduler state
+            if hasattr(self, "optimizer") and self.optimizer is not None:
+                torch.save(self.optimizer.state_dict(), os.path.join(ckpt_dir, "optimizer.bin"))
+
+            if hasattr(self, "scheduler") and self.scheduler is not None:
+                torch.save(self.scheduler.state_dict(), os.path.join(ckpt_dir, "scheduler.bin"))
+
+            # 3. Save training metadata
             training_state = {
                 "epoch": epoch,
                 "global_step": step_or_epoch if isinstance(step_or_epoch, int) else 0,
                 "best_eval_loss": best_eval_loss,
-                "completed_steps": 0
             }
             torch.save(training_state, os.path.join(ckpt_dir, "training_state.pt"))
-            
-            # Manage checkpoint limit
+
+            # 4. Checkpoint rotation
             if save_total_limit and len(saved_checkpoints) >= save_total_limit:
                 oldest_checkpoint = saved_checkpoints.pop(0)
                 if os.path.exists(oldest_checkpoint):
                     shutil.rmtree(oldest_checkpoint, ignore_errors=True)
                     print(f"🗑️ Removed old checkpoint: {oldest_checkpoint}")
-            
+
+            print(f"✅ Checkpoint saved: {ckpt_dir}")
             return ckpt_dir
-            
+
         except Exception as e:
             print(f"❌ Failed to save checkpoint: {e}")
             return None
+
+                
+            except Exception as e:
+                print(f"❌ Failed to save checkpoint: {e}")
+                return None
 
     def _save_model(self, output_dir):
         """Save the final trained model."""

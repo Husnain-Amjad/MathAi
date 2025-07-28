@@ -125,6 +125,9 @@ class ManualTraining:
             print(f"⚠️ Could not load accelerator state: {e}")
             print("Continuing with current model state...")
         
+        # Return the training state values
+        return global_step, start_epoch, best_eval_loss, completed_steps
+        
     def _init_plots(self):
         """Initialize real-time plots."""
         plt.ion()

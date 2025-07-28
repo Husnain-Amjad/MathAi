@@ -473,10 +473,6 @@ class ManualTraining:
             print(f"❌ Failed to save checkpoint: {e}")
             return None
 
-                
-            except Exception as e:
-                print(f"❌ Failed to save checkpoint: {e}")
-                return None
 
     def _save_model(self, output_dir):
         """Save the final trained model."""

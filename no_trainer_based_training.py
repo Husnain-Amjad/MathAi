@@ -199,7 +199,7 @@ class ManualTraining:
         # Dataloaders
         train_dataloader = DataLoader(
             combined_dataset,
-            batch_size=getattr(training_args.per_device_train_batch_size, "per_device_train_batch_size"),
+            batch_size=getattr(training_args.per_device_train_batch_size, "per_device_train_batch_size",4),
             shuffle=True,
             collate_fn=data_collator
         )
@@ -209,7 +209,7 @@ class ManualTraining:
         if tokenized_validation_dataset is not None:
             eval_dataloader = DataLoader(
                 tokenized_validation_dataset,
-                batch_size=getattr(training_args.per_device_eval_batch_size, "per_device_eval_batch_size"),
+                batch_size=getattr(training_args.per_device_eval_batch_size, "per_device_eval_batch_size", 2),
                 shuffle=False,
                 collate_fn=data_collator
             )

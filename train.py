@@ -32,41 +32,63 @@ MODEL_NAMES = [
     "EleutherAI/gpt-neo-2.7B",
     "google/gemma-3-27b-it"
 ]
-    # parser.add_argument("--load_checkpoints", type=str, default = None,
-    #                     help="Path to checkpoint location.")
+
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a math model with flexible configurations.")
+    # Model to Train
     parser.add_argument("--model_name", type=str, default="Qwen/Qwen2.5-Math-1.5B", 
                         choices=MODEL_NAMES, help="Model to use for training.")
+    
+    # Data to Use for Training
     parser.add_argument("--data_dir", type=str, default="AUG_MATH", help="Directory containing train.csv and validation.csv.")
+    # Fraction of data to be used for training
     parser.add_argument("--sample_ratio", type=float, default=1.0, 
                         help="Ratio of data to use (0.0 to 1.0).")
+    # If want to use stratified sampling
     parser.add_argument("--stratify_column", type=str, default=None, 
                         help="Column to use for stratified sampling (e.g., 'problem_type').")
-    parser.add_argument("--use_quantization", action="store_true", 
-                        help="Enable 4-bit quantization.")
-    parser.add_argument("--bnb_config", type=str, default= "four_bit_args", 
-                            help="When use_quantization then BitsAndBytesConfig (four_bit_args/eight_bit_args)")
-    parser.add_argument("--use_lora", action="store_true", 
-                        help="Enable LoRA fine-tuning.")
-    parser.add_argument("--lora_rank", type=int, default=16, 
-                        help="LoRA rank parameter.")
-    parser.add_argument("--lora_dropout", type=float, default=0.1, 
-                        help="LoRA dropout rate.")
-    parser.add_argument("--epochs", type=int, default=10, 
-                        help="Number of training epochs.")
-    parser.add_argument("--save_steps", type=int, default=500, 
-                        help="Save model after steps.")
-    parser.add_argument("--output_dir", type=str, default="./results", 
-                        help="Directory for saving model outputs.")
+    # Processing
     parser.add_argument("--boxed", action="store_true", 
                         help="Extract only boxed solutions instead of full solutions.")
-    parser.add_argument("--logging_steps", type=int, default= None, 
-                        help="Logging after steps.")
+    
+    # Enable Quantization 
+    parser.add_argument("--use_quantization", action="store_true", 
+                        help="Enable 4-bit quantization.")
+    # Quantization type selection
+    parser.add_argument("--bnb_config", type=str, default= "four_bit_args", 
+                            help="When use_quantization then BitsAndBytesConfig (four_bit_args/eight_bit_args)")
+    
+    # Enable LoRa 
+    parser.add_argument("--use_lora", action="store_true", 
+                        help="Enable LoRA fine-tuning.")
+    # LoRa Rank
+    parser.add_argument("--lora_rank", type=int, default=16, 
+                        help="LoRA rank parameter.")
+    # LoRa Dropout
+    parser.add_argument("--lora_dropout", type=float, default=0.1, 
+                        help="LoRA dropout rate.")
+    
+    # Define Number of epochs
+    parser.add_argument("--epochs", type=int, default=10, 
+                        help="Number of training epochs.")
+    
+    # Training configuration
+    # Save the model after no. of steps in training
+    parser.add_argument("--save_steps", type=int, default=500, 
+                        help="Save model after steps.")
+    # Directory to store the output
+    parser.add_argument("--output_dir", type=str, default="./results", 
+                        help="Directory for saving model outputs.")
+    # Logging Strategy
     parser.add_argument("--logging_strategy", type=str, default= "steps", 
                             help="Logging Strategy (steps/epoch)")
+    # Logging after no. of steps
+    parser.add_argument("--logging_steps", type=int, default= None, 
+                        help="Logging after steps.")
+    # Learning Rate
     parser.add_argument("--learning_rate", type=float, default= 2e-5, 
                             help="Learning Rate")
+    # Gradient Precision
     parser.add_argument("--fp16", type=bool, default= True, 
                             help="fp16")
     return parser.parse_args()
@@ -148,21 +170,6 @@ def main():
         elif args.bnb_config == "eight_bit_args":
             bnb_config = BitsAndBytesConfig(**eight_bit_args)
 
-    
-    # def is_lora_checkpoint(path):
-    #     return os.path.exists(os.path.join(path, "adapter_config.json"))
-    
-    # if args.load_checkpoints:
-    #     if is_lora_checkpoint(args.load_checkpoints):
-    #         print("LoRA adapter detected. Loading with PeftModel...")
-    #         model = AutoModelForCausalLM.from_pretrained(args.model_name,
-    #         quantization_config=bnb_config,
-    #         device_map="auto")
-    #         model = PeftModel.from_pretrained(model, args.load_checkpoints)
-    #     else:
-    #         print("Standard model checkpoint. Loading with AutoModelForCausalLM...")
-    #         model = AutoModelForCausalLM.from_pretrained(args.load_checkpoints)
-    # else:
     model = AutoModelForCausalLM.from_pretrained(
             args.model_name,
             quantization_config=bnb_config,
@@ -198,9 +205,6 @@ def main():
     else:
         logging_steps = args.logging_steps
 
-
-    # if args.load_checkpoints:
-    #     load_checkpoint = True
 
     # Training Setup
     training_args_dict = {

@@ -65,7 +65,7 @@ class ManualTraining:
     def find_latest_checkpoint(self, output_dir):
         """Find the latest checkpoint in the output directory."""
         if not os.path.exists(output_dir) or not os.listdir(output_dir):
-            print(f"📁 Output directory {output_dir} is empty. Starting training from scratch.")
+            print(f"Output directory {output_dir} is empty. Starting training from scratch.")
             return None
         
         # Find all checkpoint directories
@@ -73,7 +73,7 @@ class ManualTraining:
         checkpoint_dirs = glob.glob(checkpoint_pattern)
         
         if not checkpoint_dirs:
-            print(f"📁 No checkpoints found in {output_dir}. Starting training from scratch.")
+            print(f"No checkpoints found in {output_dir}. Starting training from scratch.")
             return None
         
         # Extract step/epoch numbers and find the latest
@@ -89,13 +89,13 @@ class ManualTraining:
                     latest_checkpoint = ckpt_dir
         
         if latest_checkpoint:
-            print(f"🔄 Found latest checkpoint: {latest_checkpoint}")
+            print(f"Found latest checkpoint: {latest_checkpoint}")
         
         return latest_checkpoint
 
     def load_checkpoint(self, checkpoint_path, optimizer, scheduler):
         """Load checkpoint and return training state."""
-        print(f"⏳ Loading checkpoint from: {checkpoint_path}")
+        print(f"Loading checkpoint from: {checkpoint_path}")
         
         # Load training state
         train_state_path = os.path.join(checkpoint_path, "training_state.pt")
@@ -113,16 +113,16 @@ class ManualTraining:
             start_epoch = state.get("epoch", 0)
             best_eval_loss = state.get("best_eval_loss", float("inf"))
             completed_steps = state.get("completed_steps", 0)
-            print(f"✅ Training state loaded: step {global_step}, epoch {start_epoch}")
+            print(f"Training state loaded: step {global_step}, epoch {start_epoch}")
         else:
-            print("⚠️ No training_state.pt found in checkpoint.")
+            print("No training_state.pt found in checkpoint.")
         
         # Load accelerator state (model, optimizer, scheduler)
         try:
             self.accelerator.load_state(checkpoint_path)
-            print("✅ Accelerator state (model, optimizer, scheduler) loaded successfully.")
+            print("Accelerator state (model, optimizer, scheduler) loaded successfully.")
         except Exception as e:
-            print(f"⚠️ Could not load accelerator state: {e}")
+            print(f"Could not load accelerator state: {e}")
             print("Continuing with current model state...")
         
         # Return the training state values
@@ -190,11 +190,11 @@ class ManualTraining:
 
         # Combine train and validation datasets for training (if validation exists)
         if tokenized_validation_dataset is not None:
-            print(f"🔗 Combining train ({len(tokenized_train_dataset)}) and validation ({len(tokenized_validation_dataset)}) datasets for training")
+            print(f"Combining train ({len(tokenized_train_dataset)}) and validation ({len(tokenized_validation_dataset)}) datasets for training")
             combined_dataset = ConcatDataset([tokenized_train_dataset, tokenized_validation_dataset])
         else:
             combined_dataset = tokenized_train_dataset
-            print("📊 Using only training dataset (no validation dataset provided)")
+            print("Using only training dataset (no validation dataset provided)")
 
         # Dataloaders
         train_dataloader = DataLoader(
@@ -278,10 +278,10 @@ class ManualTraining:
         timing_tracker.on_train_begin(num_epochs - start_epoch)
         self.model.train()
 
-        print(f"🚀 Starting training from epoch {start_epoch + 1}/{num_epochs}")
-        print(f"📊 Combined training samples: {len(combined_dataset)}")
+        print(f"Starting training from epoch {start_epoch + 1}/{num_epochs}")
+        print(f"Combined training samples: {len(combined_dataset)}")
         if eval_dataloader:
-            print(f"📈 Validation samples for evaluation: {len(tokenized_validation_dataset)}")
+            print(f"Validation samples for evaluation: {len(tokenized_validation_dataset)}")
 
         for epoch in range(start_epoch, num_epochs):
             timing_tracker.on_epoch_begin(epoch, num_epochs)
@@ -295,7 +295,7 @@ class ManualTraining:
                 # Calculate how many batches to skip based on global_step
                 batches_per_epoch = len(train_dataloader)
                 batch_skip_count = global_step % batches_per_epoch
-                print(f"🔄 Resuming from step {global_step}, skipping {batch_skip_count} batches in epoch {epoch + 1}")
+                print(f"Resuming from step {global_step}, skipping {batch_skip_count} batches in epoch {epoch + 1}")
 
             for step, batch in enumerate(progress_bar):
                 # Skip steps if resuming from checkpoint
@@ -332,13 +332,13 @@ class ManualTraining:
 
                 # Logging
                 if global_step % logging_steps == 0:
-                    print(f"📊 Step {global_step}: Loss = {step_loss:.4f}, LR = {scheduler.get_last_lr()[0]:.2e}")
+                    print(f"Step {global_step}: Loss = {step_loss:.4f}, LR = {scheduler.get_last_lr()[0]:.2e}")
 
                 # Evaluation
                 if eval_dataloader and eval_strategy == "steps" and global_step % eval_steps == 0:
                     train_loss = step_loss
                     eval_loss = self._evaluate(eval_dataloader)
-                    print(f"📈 Step {global_step}: Train Loss = {train_loss:.4f}, Eval Loss = {eval_loss:.4f}")
+                    print(f"Step {global_step}: Train Loss = {train_loss:.4f}, Eval Loss = {eval_loss:.4f}")
                     self.model.train()
 
                     # Update eval plots
@@ -350,7 +350,7 @@ class ManualTraining:
                     if load_best_model_at_end and eval_loss < best_eval_loss:
                         best_eval_loss = eval_loss
                         best_model_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                        print(f"💾 New best model found! Eval Loss: {eval_loss:.4f}")
+                        print(f"New best model found! Eval Loss: {eval_loss:.4f}")
 
                 # Save checkpoint
                 if global_step % save_steps == 0:
@@ -361,7 +361,7 @@ class ManualTraining:
 
             # End of epoch evaluation
             avg_epoch_loss = epoch_loss / max(epoch_steps, 1)
-            print(f"📊 Epoch {epoch + 1} completed - Average Train Loss: {avg_epoch_loss:.4f}")
+            print(f"Epoch {epoch + 1} completed - Average Train Loss: {avg_epoch_loss:.4f}")
             
             # Update epoch plots
             if show_plots:
@@ -370,7 +370,7 @@ class ManualTraining:
             
             if eval_dataloader and eval_strategy == "epoch":
                 eval_loss = self._evaluate(eval_dataloader)
-                print(f"📈 Epoch {epoch + 1}: Train Loss = {avg_epoch_loss:.4f}, Eval Loss = {eval_loss:.4f}")
+                print(f"Epoch {epoch + 1}: Train Loss = {avg_epoch_loss:.4f}, Eval Loss = {eval_loss:.4f}")
                 self.model.train()
 
                 # Update epoch eval plots
@@ -380,7 +380,7 @@ class ManualTraining:
                 if load_best_model_at_end and eval_loss < best_eval_loss:
                     best_eval_loss = eval_loss
                     best_model_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
-                    print(f"💾 New best model found! Eval Loss: {eval_loss:.4f}")
+                    print(f"New best model found! Eval Loss: {eval_loss:.4f}")
 
             # Update plots at end of epoch
             if show_plots:
@@ -399,7 +399,7 @@ class ManualTraining:
 
         # Load best model if requested
         if load_best_model_at_end and best_model_state is not None:
-            print("🏆 Loading best model weights based on validation loss...")
+            print("Loading best model weights based on validation loss...")
             self.model.load_state_dict(best_model_state)
 
         # Save final model
@@ -410,7 +410,7 @@ class ManualTraining:
             plt.ioff()
             plt.show()
             
-        print(f"🎉 Training completed! Model saved to {training_args.output_dir}")
+        print(f"Training completed! Model saved to {training_args.output_dir}")
         return self.model, self.tokenizer
 
     def _evaluate(self, eval_dataloader):
@@ -464,13 +464,13 @@ class ManualTraining:
                 oldest_checkpoint = saved_checkpoints.pop(0)
                 if os.path.exists(oldest_checkpoint):
                     shutil.rmtree(oldest_checkpoint, ignore_errors=True)
-                    print(f"🗑️ Removed old checkpoint: {oldest_checkpoint}")
+                    print(f"Removed old checkpoint: {oldest_checkpoint}")
 
-            print(f"✅ Checkpoint saved: {ckpt_dir}")
+            print(f"Checkpoint saved: {ckpt_dir}")
             return ckpt_dir
 
         except Exception as e:
-            print(f"❌ Failed to save checkpoint: {e}")
+            print(f"Failed to save checkpoint: {e}")
             return None
 
 
@@ -486,6 +486,6 @@ class ManualTraining:
             
             model_to_save.save_pretrained(output_dir)
             self.tokenizer.save_pretrained(output_dir)
-            print(f"✅ Final model saved to {output_dir}")
+            print(f"Final model saved to {output_dir}")
         except Exception as e:
-            print(f"❌ Failed to save model: {e}")
+            print(f"Failed to save model: {e}")

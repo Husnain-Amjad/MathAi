@@ -479,7 +479,7 @@ class ManualTraining:
         os.makedirs(output_dir, exist_ok=True)
         try:
             if isinstance(self.model, PeftModel):
-                print("🔗 Merging LoRA weights...")
+                print("Merging LoRA weights...")
                 model_to_save = self.model.merge_and_unload()
             else:
                 model_to_save = self.model

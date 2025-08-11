@@ -142,6 +142,12 @@ def main():
     # Tokenizer Setup
 
     tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    
+    # If pad_token is missing, then setting it
+    if tokenizer.pad_token is None:
+        tokenizer.pad_token = tokenizer.eos_token
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+
     tokenizer_obj = Tokenization(tokenizer, max_length=1024)
 
     # Tokenize Data

@@ -67,7 +67,7 @@ class Preprocessing:
         if extracted_value.startswith('{') and extracted_value.endswith('}'):
             extracted_value = extracted_value[1:-1]
         extracted_value = extracted_value.replace(' ', '') 
-        print("Extracted_value : ", extracted_value)
+        # print("Extracted_value : ", extracted_value)
 
 
         return extracted_value
@@ -91,7 +91,7 @@ class Preprocessing:
             end_pos = start_pos + dollar_pos 
 
             extracted_value = string[start_pos:end_pos]
-            print("extracted Value : : ", extracted_value)
+            # print("extracted Value : : ", extracted_value)
             return extracted_value if extracted_value else None
     
     @staticmethod

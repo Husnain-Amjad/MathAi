@@ -31,11 +31,11 @@ To set up the MathAi pipeline, follow these steps:
    pip install -r requirements.txt
    ```
 
-3. **Download the MATH dataset**: The MATH dataset by Hendrycks is required. Download it from the official repository and place it in the `data/` directory.
+3. **MATH dataset**: The MATH dataset by Hendrycks is placed in the `AUG_MATH/` directory.
 
 ## Dataset
 
-The MATH dataset, created by Hendrycks et al., consists of thousands of math word problems across various difficulty levels and topics, including:
+The MATH dataset, created by Hendrycks et al., consists of 12500 math word problems across various difficulty levels and topics, including:
 
 - Algebra
 - Geometry
@@ -60,54 +60,40 @@ The pipeline supports popular LLM frameworks like PyTorch and Hugging Face Trans
 
 ```
 MathAi/
-├── data/                # MATH dataset and preprocessed files
-├── models/              # Fine-tuned model checkpoints
-├── scripts/             # Training and evaluation scripts
-├── requirements.txt     # Python dependencies
-└── README.md            # This file
+├── AUG_MATH/              # MATH dataset and related files
+├── __pycache__/           # Compiled Python files
+├── README.md              # Project documentation
+├── base_data_loader.py    # Data loading utilities
+├── bnb_config.py          # Configuration for training
+├── data_processing.py     # Data preprocessing script (updated for padding tokens)
+├── inference.py           # Inference script
+├── lora_config.py         # LoRA configuration
+├── main.py                
+├── no_trainer_based_training.py  # Trainer-less training with comments cleaned
+├── requirements.txt       # Dependency list (updated configuration)
+├── tokenization.py        # Tokenization script (cleaned of useless code)
+├── train.py               # Main Training script (updated for padding tokens)
+├── trainer_based_training.py  # Trainer-based training script
+├── training_args_config.py    # Updated argument passing for no-trainer
+├── training_with_trainer.py   # Training with trainer script
+└── training_without_trainer.py  # Updated stratified sampling
 ```
 
 ## Usage
 
-To use the MathAi pipeline:
+To use the MathAi complete pipeline:
 
-1. **Preprocess the dataset**:
-
-   ```bash
-   python scripts/preprocess.py --data_path data/MATH/
-   ```
-
-2. **Train the model**:
+**Train the model**:
 
    ```bash
-   python scripts/train.py --model_name <model_name> --data_path data/processed/
+   python train.py --model_name <model_path>  --sample_ratio 0.30 --save_steps 300 --logging_steps 1500 --epochs 5 --use_quantization --use_lora --lora_rank 16 --lora_dropout 0.1 --output_dir <directory_path>
    ```
 
-3. **Evaluate the model**:
-
-   ```bash
-   python scripts/evaluate.py --model_path models/<model_checkpoint> --test_data data/processed/test.json
-   ```
-
-4. **Generate solutions**:
-
-   ```bash
-   python scripts/generate.py --model_path models/<model_checkpoint> --input "Solve the equation 2x + 3 = 7"
-   ```
-
-Replace `<model_name>` and `<model_checkpoint>` with the desired model (e.g., `bert-base-uncased` or a custom checkpoint).
+Replace `<model_path>`  with the desired model and `<directory_path>` with output directory path.
 
 ## Contributing
-
-Contributions are welcome! To contribute:
-
-1. Fork the repository.
-2. Create a new branch (`git checkout -b feature-branch`).
-3. Make your changes and commit (`git commit -m "Add feature"`).
-4. Push to the branch (`git push origin feature-branch`).
-5. Open a pull request.
-
-Please ensure your code follows the project's coding standards and includes relevant tests.
+Currently repository is under maintainance. 
+Contributions will be welcomed soon.
 
 ## License
 

@@ -1,2 +1,5 @@
 # MathAi
-This repository contain a pipeline for improving LLMs ability to reason on complex math word problems, for this purpose utilized dataset is MATH by Hendrycks.
+
+## Overview
+
+MathAi is a project dedicated to enhancing the reasoning capabilities of Large Language Models (LLMs) on complex mathematical word problems. This repository contains a pipeline designed to fine-tune and evaluate LLMs using the MATH dataset by Hendrycks, which includes a diverse set of challenging math problems ranging from algebra to calculus.

@@ -67,6 +67,9 @@ def parse_args():
     # LoRa Dropout
     parser.add_argument("--lora_dropout", type=float, default=0.1, 
                         help="LoRA dropout rate.")
+    # LoRa Target Module
+    parser.add_argument("--lora_target_modules", nargs="+", default=lora_default_args["target_modules"],
+                            help="LoRA Target Module for update ([q_proj, v_proj, k_proj, o_proj]), Example use: --lora_target_modules q_proj v_proj")
     
     # Define Number of epochs
     parser.add_argument("--epochs", type=int, default=10, 
@@ -186,6 +189,7 @@ def main():
             lora_config = lora_default_args.copy()
             lora_config["r"] = args.lora_rank
             lora_config["lora_dropout"] = args.lora_dropout
+            lora_config["target_modules"] = args.lora_target_modules
             peft_config = LoraConfig(**lora_config)
             model = prepare_model_for_kbit_training(model)
             model = get_peft_model(model, peft_config)

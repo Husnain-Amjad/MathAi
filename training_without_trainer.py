@@ -226,13 +226,13 @@ trained_model, model_tokenizer = trainer_wrapper.training(training_args=training
 #################################################### Model Inference ###################################################
 ########################################################################################################################
 
-question = "What is 2+2"
-# test_loader = BaseDataLoader('AUG_MATH\\test.csv')
-# test_data = test_loader.load()
+# question = "What is 2+2"
+# # test_loader = BaseDataLoader('AUG_MATH\\test.csv')
+# # test_data = test_loader.load()
 
-inference_wrapr = InferenceModule(trained_model, model_tokenizer)
-# generated_output = inference_wrapr.generator(test_data['problem'])
+# inference_wrapr = InferenceModule(trained_model, model_tokenizer)
+# # generated_output = inference_wrapr.generator(test_data['problem'])
 
-generated_output = inference_wrapr.generator(question)
+# generated_output = inference_wrapr.generator(question)
 
 

@@ -182,7 +182,7 @@ def main():
     model = AutoModelForCausalLM.from_pretrained(
             args.model_name,
             quantization_config=bnb_config,
-            device_map="auto"
+            device_map="sequential"
         )
 
     if args.use_lora:

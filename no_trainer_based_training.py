@@ -46,7 +46,7 @@ class ManualTraining:
     """Enhanced ManualTraining class that matches your existing interface."""
     
     def __init__(self, model, tokenizer):
-        os._Environ[PYTORCH_CUDA_ALLOC_CONF]="expandable_segments:True"
+        os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
         self.model = model
         self.tokenizer = tokenizer
         self.accelerator = Accelerator(mixed_precision="fp16" if torch.cuda.is_available() else "no")

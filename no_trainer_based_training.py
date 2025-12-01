@@ -52,15 +52,15 @@ class ManualTraining:
         self.accelerator = Accelerator(mixed_precision="fp16" if torch.cuda.is_available() else "no")
         self.model.to(self.device)
         
-        # Real-time plotting
-        self.step_losses = deque(maxlen=1000)
-        self.step_eval_losses = deque(maxlen=1000)
-        self.steps = deque(maxlen=1000)
-        self.epoch_losses = []
-        self.epoch_eval_losses = []
-        self.epochs = []
-        self.fig = None
-        self.plot_thread = None
+        # # Real-time plotting
+        # self.step_losses = deque(maxlen=1000)
+        # self.step_eval_losses = deque(maxlen=1000)
+        # self.steps = deque(maxlen=1000)
+        # self.epoch_losses = []
+        # self.epoch_eval_losses = []
+        # self.epochs = []
+        # self.fig = None
+        # self.plot_thread = None
 
     def find_latest_checkpoint(self, output_dir):
         """Find the latest checkpoint in the output directory."""
@@ -128,56 +128,56 @@ class ManualTraining:
         # Return the training state values
         return global_step, start_epoch, best_eval_loss, completed_steps
         
-    def _init_plots(self):
-        """Initialize real-time plots."""
-        plt.ion()
-        self.fig, ((self.ax1, self.ax2)) = plt.subplots(1, 2, figsize=(12, 5))
-        self.fig.suptitle('Training Progress')
+    # def _init_plots(self):
+    #     """Initialize real-time plots."""
+    #     plt.ion()
+    #     self.fig, ((self.ax1, self.ax2)) = plt.subplots(1, 2, figsize=(12, 5))
+    #     self.fig.suptitle('Training Progress')
         
-        self.ax1.set_title('Step Loss')
-        self.ax1.set_xlabel('Step')
-        self.ax1.set_ylabel('Loss')
+    #     self.ax1.set_title('Step Loss')
+    #     self.ax1.set_xlabel('Step')
+    #     self.ax1.set_ylabel('Loss')
         
-        self.ax2.set_title('Epoch Loss')
-        self.ax2.set_xlabel('Epoch')
-        self.ax2.set_ylabel('Loss')
+    #     self.ax2.set_title('Epoch Loss')
+    #     self.ax2.set_xlabel('Epoch')
+    #     self.ax2.set_ylabel('Loss')
         
-        plt.tight_layout()
-        plt.show(block=False)
+    #     plt.tight_layout()
+    #     plt.show(block=False)
 
-    def _update_plots(self):
-        """Update plots with current data."""
-        if not hasattr(self, 'ax1'):
-            return
+    # def _update_plots(self):
+    #     """Update plots with current data."""
+    #     if not hasattr(self, 'ax1'):
+    #         return
             
-        # Step plot
-        self.ax1.clear()
-        self.ax1.set_title('Step Loss')
-        self.ax1.set_xlabel('Step')
-        self.ax1.set_ylabel('Loss')
-        if self.steps and self.step_losses:
-            self.ax1.plot(list(self.steps), list(self.step_losses), 'b-', label='Train', alpha=0.7)
-        if self.steps and self.step_eval_losses:
-            eval_steps = [s for i, s in enumerate(self.steps) if i < len(self.step_eval_losses)]
-            self.ax1.plot(eval_steps, list(self.step_eval_losses), 'r-', label='Eval', alpha=0.7)
-        self.ax1.legend()
-        self.ax1.grid(True, alpha=0.3)
+    #     # Step plot
+    #     self.ax1.clear()
+    #     self.ax1.set_title('Step Loss')
+    #     self.ax1.set_xlabel('Step')
+    #     self.ax1.set_ylabel('Loss')
+    #     if self.steps and self.step_losses:
+    #         self.ax1.plot(list(self.steps), list(self.step_losses), 'b-', label='Train', alpha=0.7)
+    #     if self.steps and self.step_eval_losses:
+    #         eval_steps = [s for i, s in enumerate(self.steps) if i < len(self.step_eval_losses)]
+    #         self.ax1.plot(eval_steps, list(self.step_eval_losses), 'r-', label='Eval', alpha=0.7)
+    #     self.ax1.legend()
+    #     self.ax1.grid(True, alpha=0.3)
         
-        # Epoch plot
-        self.ax2.clear()
-        self.ax2.set_title('Epoch Loss')
-        self.ax2.set_xlabel('Epoch')
-        self.ax2.set_ylabel('Loss')
-        if self.epochs and self.epoch_losses:
-            self.ax2.plot(self.epochs, self.epoch_losses, 'b-o', label='Train', alpha=0.7)
-        if self.epochs and self.epoch_eval_losses:
-            self.ax2.plot(self.epochs, self.epoch_eval_losses, 'r-o', label='Eval', alpha=0.7)
-        self.ax2.legend()
-        self.ax2.grid(True, alpha=0.3)
+    #     # Epoch plot
+    #     self.ax2.clear()
+    #     self.ax2.set_title('Epoch Loss')
+    #     self.ax2.set_xlabel('Epoch')
+    #     self.ax2.set_ylabel('Loss')
+    #     if self.epochs and self.epoch_losses:
+    #         self.ax2.plot(self.epochs, self.epoch_losses, 'b-o', label='Train', alpha=0.7)
+    #     if self.epochs and self.epoch_eval_losses:
+    #         self.ax2.plot(self.epochs, self.epoch_eval_losses, 'r-o', label='Eval', alpha=0.7)
+    #     self.ax2.legend()
+    #     self.ax2.grid(True, alpha=0.3)
         
-        plt.tight_layout()
-        plt.draw()
-        plt.pause(0.01)
+    #     plt.tight_layout()
+    #     plt.draw()
+    #     plt.pause(0.01)
 
     def training(self, training_args, tokenized_train_dataset, tokenized_validation_dataset, data_collator):
         """Main training method that matches your existing interface."""

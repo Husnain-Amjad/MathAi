@@ -270,10 +270,10 @@ class ManualTraining:
         # Create output directory
         os.makedirs(training_args.output_dir, exist_ok=True)
 
-        # Initialize plots if enabled
-        show_plots = getattr(training_args, 'show_plots', True)
-        if show_plots:
-            self._init_plots()
+        # # Initialize plots if enabled
+        # show_plots = getattr(training_args, 'show_plots', True)
+        # if show_plots:
+        #     self._init_plots()
 
         timing_tracker.on_train_begin(num_epochs - start_epoch)
         self.model.train()
@@ -317,12 +317,8 @@ class ManualTraining:
                 global_step += 1
                 epoch_steps += 1
 
-                # Update step plots
-                if show_plots:
-                    self.steps.append(global_step)
-                    self.step_losses.append(step_loss)
-                    if global_step % 10 == 0:  # Update every 10 steps
-                        self._update_plots()
+
+
 
                 progress_bar.set_postfix({
                     "loss": f"{step_loss:.4f}",
@@ -341,10 +337,10 @@ class ManualTraining:
                     print(f"Step {global_step}: Train Loss = {train_loss:.4f}, Eval Loss = {eval_loss:.4f}")
                     self.model.train()
 
-                    # Update eval plots
-                    if show_plots:
-                        self.step_eval_losses.append(eval_loss)
-                        self._update_plots()
+                    # # Update eval plots
+                    # if show_plots:
+                    #     self.step_eval_losses.append(eval_loss)
+                    #     self._update_plots()
 
                     # Save best model
                     if load_best_model_at_end and eval_loss < best_eval_loss:
@@ -363,28 +359,28 @@ class ManualTraining:
             avg_epoch_loss = epoch_loss / max(epoch_steps, 1)
             print(f"Epoch {epoch + 1} completed - Average Train Loss: {avg_epoch_loss:.4f}")
             
-            # Update epoch plots
-            if show_plots:
-                self.epochs.append(epoch + 1)
-                self.epoch_losses.append(avg_epoch_loss)
+            # # Update epoch plots
+            # if show_plots:
+            #     self.epochs.append(epoch + 1)
+            #     self.epoch_losses.append(avg_epoch_loss)
             
             if eval_dataloader and eval_strategy == "epoch":
                 eval_loss = self._evaluate(eval_dataloader)
                 print(f"Epoch {epoch + 1}: Train Loss = {avg_epoch_loss:.4f}, Eval Loss = {eval_loss:.4f}")
                 self.model.train()
 
-                # Update epoch eval plots
-                if show_plots:
-                    self.epoch_eval_losses.append(eval_loss)
+                # # Update epoch eval plots
+                # if show_plots:
+                #     self.epoch_eval_losses.append(eval_loss)
 
                 if load_best_model_at_end and eval_loss < best_eval_loss:
                     best_eval_loss = eval_loss
                     best_model_state = {k: v.cpu().clone() for k, v in self.model.state_dict().items()}
                     print(f"New best model found! Eval Loss: {eval_loss:.4f}")
 
-            # Update plots at end of epoch
-            if show_plots:
-                self._update_plots()
+            # # Update plots at end of epoch
+            # if show_plots:
+            #     self._update_plots()
 
             timing_tracker.on_epoch_end(epoch)
 
@@ -405,10 +401,10 @@ class ManualTraining:
         # Save final model
         self._save_model(training_args.output_dir)
         
-        # Keep plots open
-        if show_plots:
-            plt.ioff()
-            plt.show()
+        # # Keep plots open
+        # if show_plots:
+        #     plt.ioff()
+        #     plt.show()
             
         print(f"Training completed! Model saved to {training_args.output_dir}")
         return self.model, self.tokenizer

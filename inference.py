@@ -1,11 +1,24 @@
-import argparse
+# ==============================================================================
+# CRITICAL HARDWARE OVERRIDES: Must run BEFORE any vLLM or Torch imports!
+# ==============================================================================
 import os
+
+# 1. Disable the experimental V1 engine that causes the 🧊🧊🧊 ICE compiler crash
+os.environ["VLLM_USE_V1"] = "0"
+
+# 2. Force Xformers (or Math) backend because FlashAttention2 fails on T4 GPUs
+os.environ["VLLM_ATTENTION_BACKEND"] = "XFORMERS"
+# ==============================================================================
+
+import argparse
 import re
 import json
 import tempfile
 import time
 import pandas as pd
 from tqdm import tqdm
+
+# Now it is safe to import vLLM because the environment is properly configured
 from vllm import LLM, SamplingParams
 from transformers import AutoTokenizer
 from peft import AutoPeftModelForCausalLM
@@ -20,9 +33,8 @@ def parse_args():
     parser.add_argument("--solution_column", type=str, default="solution", help="Column name for the ground truth solution.")
     parser.add_argument("--num_responses", type=int, default=4, help="Number of responses to generate per prompt (n parameter in vLLM).")
     
-    # Updated: Higher default max_tokens and added max_model_len
-    parser.add_argument("--max_tokens", type=int, default=4096, help="Maximum tokens to generate per response.")
-    parser.add_argument("--max_model_len", type=int, default=8192, help="Total context window size (prompt + generation) for vLLM.")
+    parser.add_argument("--max_tokens", type=int, default=3000, help="Maximum tokens to generate per response.")
+    parser.add_argument("--max_model_len", type=int, default=4096, help="Total context window size (prompt + generation) for vLLM.")
     
     parser.add_argument("--temperature", type=float, default=0.7, help="Temperature for sampling (must be > 0 for multiple unique responses).")
     parser.add_argument("--top_p", type=float, default=0.9, help="Top-p sampling parameter.")
@@ -77,7 +89,6 @@ def main():
     print(f"\n[Timeline] Initializing vLLM from {model_dir_for_vllm}...")
     vllm_start = time.time()
     
-    # Updated: Passed max_model_len to the vLLM engine
     llm = LLM(
         model=model_dir_for_vllm, 
         trust_remote_code=True, 
@@ -110,7 +121,6 @@ def main():
 
     print(f"\n[Timeline] Starting inference for {len(formatted_prompts)} prompts ({args.num_responses} responses each)...")
     inference_start = time.time()
-    # vLLM automatically displays a tqdm progress bar for this step!
     outputs = llm.generate(formatted_prompts, sampling_params)
     print(f"[Timeline] Inference completed in {time.time() - inference_start:.2f} seconds.")
 
@@ -122,7 +132,6 @@ def main():
         original_problem = df.iloc[idx][args.prompt_column]
         ground_truth = df.iloc[idx][args.solution_column]
         
-        # Output outputs is a list of completions because n=num_responses
         responses = [output.outputs[i].text for i in range(args.num_responses)]
         rewards = [check_correctness(r, ground_truth) for r in responses]
             

@@ -7,3 +7,5 @@ peft>=0.4.0
 accelerate>=0.20.0
 datasets>=2.12.0
 accelerate>=0.20.0
+scikit-learn>=1.2.2
+vllm>=0.4.0

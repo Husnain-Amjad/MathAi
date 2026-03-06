@@ -7,13 +7,13 @@ and writes a JSONL dataset ready for PPO / RLHF training.
 Usage examples
 --------------
 # Base model
-python vllm_inference.py \
+python inference.py \
     --model_path "Qwen/Qwen2.5-Math-7B" \
     --data_path  "math_val.csv" \
     --output_path "ppo_data.jsonl"
 
 # LoRA adapter (auto-merged before loading into vLLM)
-python vllm_inference.py \
+python inference.py \
     --model_path "checkpoints/lora-math-v1" \
     --is_lora \
     --data_path  "math_val.csv" \
